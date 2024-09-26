@@ -34,22 +34,32 @@ class GameState:
 class TileSet:
         def __init__(self, tiles: list[Tile]) -> None:
             self.tile_set = tiles
+             # add info here to shortcuts
 
         def is_valid(self) -> bool:
             if self.is_valid_sequence() or self.is_valid_group():
                 return True
             return False
-            
+        
         def is_valid_sequence(self):
             if len(self.tile_set) < 3 or len(self.tile_set) > 13:
                 # not enough/too much Tiles to complete a valid sequence
                 return False
             
-            sorted_tiles = sorted(self.tiles, key=lambda t: t.number)
+            sorted_tiles = sorted(self.tile_set, key=lambda t: t.number)
             base_color = self.tile_set[0].color
+            base_number = self.tile_set[0].number
 
-            #TODO complete the logic
-
+            for i, tile in enumerate(sorted_tiles):
+                if tile.color != base_color:
+                    # different colors in sequence, invalid
+                    return False
+                if (tile.number + i) - (base_number + i) != i:
+                    # bad number sequence
+                    return False
+            # valid sequence
+            return True
+                
         def is_valid_group(self):
             if len(self.tile_set) not in [3, 4]:
                 # not enough/too much Tiles to complete a valid group
@@ -152,3 +162,5 @@ class RummikubGame:
 
 if __name__ == '__main__':
     game = RummikubGame('coince', 'gabi', 'cheik')
+    game.board.add_tile_set([Tile(4, 'blue'), Tile(4, 'red'), Tile(4, 'orange')])
+    print(game.board.sets[0].is_valid())
