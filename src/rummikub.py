@@ -36,7 +36,10 @@ class TileSet:
             self.tile_set = tiles
 
         def is_valid(self) -> bool:
-            pass
+            if self.is_valid_sequence() or self.is_valid_group():
+                return True
+            return False
+            
         def is_valid_sequence(self):
             if len(self.tile_set) < 3 or len(self.tile_set) > 13:
                 # not enough/too much Tiles to complete a valid sequence
