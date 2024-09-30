@@ -87,18 +87,20 @@ class TileSet:
 
 class Board:
     def __init__(self) -> None:
-        self.group_sets = []
-        self.sequence_sets = []
+        '''constructor of the board'''
+        self.groups = []
+        self.sequences = []
         self.temp_sets = []
 
     def add_tile_set(self, tiles):
+        '''Add a tile set to either groups if it's a valid group, sequence if it's a valid sequence else in temp sets'''
         tile_set = TileSet(tiles)
         if tile_set.is_valid_group():
             # tile_set is a valid group
-            self.group_sets.append(tile_set)
+            self.groups.append(tile_set)
         elif tile_set.is_valid_sequence():
             # tile_set is a valid sequence
-            self.sequence_sets.append(tile_set)
+            self.sequences.append(tile_set)
         else:
             # tile_set isn't valid
             self.temp_sets.append(tile_set)
@@ -132,9 +134,6 @@ class RummikubGame:
             self.player_turn = [player.name for player in self.players].index(player_to_start) - 1 if player_to_start else None
         except ValueError:
             self.player_turn = None
-
-        self.board.add_tile_set([Tile(1, 'blue'), Tile(6, 'blue'), Tile(6, 'blue'), Tile(6, 'blue')])
-        print(self.board.sets[0].is_valid_group())
 
     def draw(self, tile_number: int) -> Tile | list[Tile]:
         '''Draw a specified number of tiles from the draw pile.'''
