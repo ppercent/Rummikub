@@ -201,6 +201,7 @@ if __name__ == '__main__':
     # interaction 1: place a valid tile set on the board OR place invalid tile(s) on the (temp) board
     tiles = [Tile(1, 'blue'), Tile(2, 'blue'), Tile(3, 'blue'), Tile(4, 'blue')]
     game.board.add_tile_set(tiles)
+    print(game.board.sequences[0].right_tile)
 
     # TODO (*)idea: make a class for the temp tiles on the board (keep track of them easier)
 
