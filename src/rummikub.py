@@ -190,6 +190,22 @@ class RummikubGame:
         pass
 
 if __name__ == '__main__':
-    game = RummikubGame('coince', 'gabi', 'cheik')
-    game.board.add_tile_set([Tile(4, 'blue'), Tile(4, 'red'), Tile(4, 'orange')])
-    print(game.board.sets[0].is_valid())
+    player_info = [('coince', False), ('gabi', True), ('cheik', False)]
+    game = RummikubGame(player_info, 'coince')
+
+    # board init
+
+    # player to play init
+    player_to_play = game.get_next_player_turn()
+
+    # interaction 1: place a valid tile set on the board OR place invalid tile(s) on the (temp) board
+    tiles = [Tile(1, 'blue'), Tile(2, 'blue'), Tile(3, 'blue'), Tile(4, 'blue')]
+    game.board.add_tile_set(tiles)
+
+    # TODO (*)idea: make a class for the temp tiles on the board (keep track of them easier)
+
+    # TODO interaction 2: insert a/ tile(s) in a given index on a tile set
+
+    # TODO interaction 3: splitting a board tile set into two different tile sets (*)idea
+
+    # TODO interaction 4: merging different groups of tiles into one valid tile set (if isn't possible loading last snapshot of the board)
