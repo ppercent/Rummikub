@@ -81,10 +81,33 @@ class TileSet:
 
 class Board:
     def __init__(self) -> None:
-        self.sets = []
-    
-    def add_tile_set(self, tiles: list[Tile]):
-        self.sets.append(TileSet(tiles))
+        self.group_sets = []
+        self.sequence_sets = []
+        self.temp_sets = []
+
+    def add_tile_set(self, tiles):
+        tile_set = TileSet(tiles)
+        if tile_set.is_valid_group():
+            # tile_set is a valid group
+            self.group_sets.append(tile_set)
+        elif tile_set.is_valid_sequence():
+            # tile_set is a valid sequence
+            self.sequence_sets.append(tile_set)
+        else:
+            # tile_set isn't valid
+            self.temp_sets.append(tile_set)
+
+    def get_board_snapshot(self):
+        '''returns the snapshot of the current board state'''
+        return copy.deepcopy(self.__dict__)
+
+    def restore_board_snapshot(self, snapshot):
+        '''restores a snapshot of a board state'''
+        self.__dict__.update(copy.deepcopy(snapshot))
+
+    def clear_temp_sets(self):
+        '''clears the temp set array'''
+        self.temp_sets = []
 
 class RummikubGame:
     def __init__(self, *players, player_to_start = None, ) -> None:
