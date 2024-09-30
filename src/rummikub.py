@@ -1,5 +1,6 @@
-from random import shuffle, randint
 from rummikub_bot import RummikubBot
+from random import shuffle, randint
+import copy
 import sys
 
 
@@ -9,6 +10,9 @@ class Tile:
         self.color = color if not is_joker else None
         self.is_joker = is_joker
     
+    def __str__(self):
+        return f'[{self.number} - {self.color}]'
+
     def clear_joker(self) -> None:
         """
         Clear the number and color attributes of a joker tile.
