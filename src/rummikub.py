@@ -34,14 +34,20 @@ class GameState:
 class TileSet:
         def __init__(self, tiles: list[Tile]) -> None:
             self.tile_set = tiles
-             # add info here to shortcuts
+            self.left_tile = self.tile_set[0]
+            self.right_tile = self.tile_set[-1]
+            self.size = len(tiles)
+
+            # TODO add splitting & inserting logic (with additional methods)
 
         def is_valid(self) -> bool:
+            '''Check if the TileSet instance is a valid sequence or a valid group.'''
             if self.is_valid_sequence() or self.is_valid_group():
                 return True
             return False
         
-        def is_valid_sequence(self):
+        def is_valid_sequence(self) -> bool:
+            '''Check if the TileSet instance is a valid sequence.'''
             if len(self.tile_set) < 3 or len(self.tile_set) > 13:
                 # not enough/too much Tiles to complete a valid sequence
                 return False
@@ -60,7 +66,8 @@ class TileSet:
             # valid sequence
             return True
                 
-        def is_valid_group(self):
+        def is_valid_group(self) -> bool:
+            '''Check if the TileSet instance is a valid group.'''
             if len(self.tile_set) not in [3, 4]:
                 # not enough/too much Tiles to complete a valid group
                 return False
@@ -74,7 +81,6 @@ class TileSet:
                 if tile.number != base_number:
                     # 2 different numbers in the group, invalid
                     return False
-                
                 known_colors.append(tile.color)
             # tile set has same numbers & different colors, valid
             return True
