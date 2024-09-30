@@ -173,7 +173,7 @@ class RummikubGame:
         for player in self.players:
             player.hand = self.draw_pile(14)
 
-    def get_player_turn(self) -> Player:
+    def get_next_player_turn(self) -> Player:
         '''Returns the player who needs to play'''
         if self.player_turn != None:
             # a player has already played
@@ -181,7 +181,7 @@ class RummikubGame:
             return self.players[self.player_turn]
         else:
             # (get) the first player to play
-            self.player_turn = randint(0, len(self.players) - 1) # TODO implement different logic (choose whoever wants to start)
+            self.player_turn = randint(0, len(self.players) - 1)
             return self.players[self.player_turn]
             
     def player_play(self, player: Player) -> None:
