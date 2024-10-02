@@ -9,9 +9,6 @@ class Tile:
         self.number = number if not is_joker else None
         self.color = color if not is_joker else None
         self.is_joker = is_joker
-    
-    def __str__(self):
-        return f'[{self.number}-{self.color}]'
 
     def clear_joker(self) -> None:
         """
@@ -22,6 +19,12 @@ class Tile:
         if self.is_joker:
             self.number = None
             self.color = None
+
+    def __eq__(self, other):
+        return (self.number == other.number) and (self.color == other.color) and (self.is_joker == other.is_joker)
+
+    def __str__(self):
+        return f'[{self.number}-{self.color}]'
 
 class Player:
     def __init__(self, name='Player', is_bot=False) -> None:
@@ -39,12 +42,23 @@ class TileSet:
     def __init__(self, tiles: list[Tile]) -> None:
         self.tile_set = tiles
         self.update_attributes()
-        # a tile_set has to be valid
-        # TODO add splitting & inserting logic (with additional methods)
+
+    def split_set(self, index: int, board_instance: 'Board'):
+        '''Splits tileset in a given index'''
+        if index <= 0 or index >= len(self.tile_set):
+            # invalid index, returning
+            return
+        
+        split_tiles = list((self.tile_set[:index], self.tile_set[index:]))
+        split_tile_set = [TileSet(split_tiles[0]), TileSet(split_tiles[-1])]
+        
+        for tileset in split_tile_set:
+            board_instance.add_tile_set(tileset)
+
 
     def append_tile(self, position: str, tile: Tile) -> None:
-        '''append to the tileset tiles at position
-        str position: left | right
+        '''append to the tileset tiles at position: 
+        str position: left | right\n
         tile: tile to be inserted
         '''
         tileset_snapshot = self.get_snapshot()
@@ -119,43 +133,53 @@ class TileSet:
         # tile set has same numbers & different colors, valid
         return True
     
+    def __eq__(self, other):
+        return self.tile_set == other.tile_set
+
     def __str__(self):
         tileset = ''
         for tile in self.tile_set:
             tileset += f'[{tile.number}-{tile.color}]  '
         return tileset
 
-class TempBoard:
-    def __init__(self) -> None:
-        pass
-        # TODO add temp set logic
-
-# -- class --
-# should store multiple TileSet.
-# is used after a player makes 'temp' moves that are illegal on the board thus cannot be stored in the valid groups
-# at the end of a player turn instance should be cleared
-# 
-# -- Methods --
-# check for every temp sets & tell if they are all resolved
-# clear all the temp sets / make sure to clear resoled sets
-# 
-
-
 class Board:
     def __init__(self) -> None:
         '''constructor of the board'''
-        self.groups = []
-        self.sequences = []
-        self.temp_sets = []
+        self.groups = []        # array of TileSet | must be valid
+        self.sequences = []     # array of TileSet | must be valid
+        self.temp_sets = []     # array of TileSet | can be invalid
 
-    def split_set(self, index: int) -> None:
-        '''Splits groups/sequences in a given index'''
-        # to be implemented later (after temp sets class)
-        pass
+    def merge_sets(self, left_set: TileSet, right_set: TileSet) -> None:
+        '''Merge two TileSets if it creates a valid TileSet'''
+        # create the array of tiles and merge it
+        tile_array = []
+        for tile in left_set.tile_set:
+            tile_array.append(tile)
 
-    def add_tile_set(self, tiles):
-        '''Add a tile set to either groups if it's a valid group, sequence if it's a valid sequence else in temp sets'''
-        tile_set = TileSet(tiles)
+        for tile in right_set.tile_set:
+            tile_array.append(tile)
+
+        # convert it to a TileSet & clear the remaining copies of the Tiles
+        merged_tile_set = TileSet(tile_array)
+        if merged_tile_set.is_valid():
+            self.add_tile_set(merged_tile_set)
+
+            self.remove_tile_set(left_set)
+            self.remove_tile_set(right_set)
+
+    def remove_tile_set(self, tileset: TileSet) -> None:
+        '''Removes a TileSet from the board. POTENTIAL ISSUE HERE'''
+        self.groups.remove(tileset) if tileset in self.groups else None
+        self.sequences.remove(tileset) if tileset in self.sequences else None
+        self.temp_sets.remove(tileset) if tileset in self.temp_sets else None
+
+    def add_tile_set(self, tiles: list[Tile] | TileSet) -> None:
+        '''Add a tile set to either: groups if it's a valid group, sequence if it's a valid sequence else in temp sets'''
+        if type(tiles).__name__ == 'list':
+            tile_set = TileSet(tiles)
+        else:
+            tile_set = tiles
+        
         if tile_set.is_valid_group():
             # tile_set is a valid group
             self.groups.append(tile_set)
@@ -180,21 +204,24 @@ class Board:
 
     def __str__(self):
         board_str = '====== SEQUENCES ======\n'
+        board_str += 'No sets in sequences\n' if len(self.sequences) == 0 else ''
         for tile_set in self.sequences:
             board_str += f'{tile_set}\n'
             
         board_str += '\n====== GROUPS ======\n'
+        board_str += 'No sets in groups\n' if len(self.groups) == 0 else ''
         for tile_set in self.groups:
             board_str += f'{tile_set}\n'
 
         board_str += '\n====== TEMP ======\n'
+        board_str += 'No sets in temp\n' if len(self.temp_sets) == 0 else ''
         for tile_set in self.temp_sets:
             board_str += f'{tile_set}\n'
 
         return board_str
 
 class RummikubGame:
-    def __init__(self, player_info: list[tuple], player_to_start = None, ) -> None:
+    def __init__(self, player_info: list[tuple], player_to_start = None) -> None:
         # initialize players
         self.players = [Player(name, is_bot) for name, is_bot in player_info]
         if len(self.players) not in [2, 3, 4]:
@@ -277,11 +304,18 @@ if __name__ == '__main__':
     # interaction 1: place a valid tile set on the board OR place invalid tile(s) on the (temp) board
     tiles = [Tile(1, 'blue'), Tile(2, 'blue'), Tile(3, 'blue'), Tile(4, 'blue')]
     game.board.add_tile_set(tiles)
+    print(game.board)
 
-    # interaction 2: insert a tile on the left/right of a tile set
+    # interaction 2: insert a tile on the right/left of a tile set
     game.board.sequences[0].append_tile('right', Tile(5, 'blue'))
+    print(game.board)
 
-    # TODO interaction 3: splitting a board tile set into two different tile sets (*)idea
+    # interaction 3: splitting a board tile set into two different tile sets (*)idea
+    game.board.sequences[0].split_set(3, game.board)
+    print(game.board)
 
-
-    # TODO interaction 4: merging different groups of tiles into one valid tile set (if isn't possible loading last snapshot of the board)
+    # interaction 4: merging different groups of tiles into one valid tile set (if isn't possible loading last snapshot of the board)
+    l_part = game.board.sequences[1]
+    r_part = game.board.temp_sets[0]
+    game.board.merge_sets(l_part, r_part)
+    print(game.board)
