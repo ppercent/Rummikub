@@ -24,7 +24,7 @@ class Tile:
         return (self.number == other.number) and (self.color == other.color) and (self.is_joker == other.is_joker)
 
     def __str__(self):
-        return f'[{self.number}-{self.color}]'
+        return f'[{self.number}-{self.color}]' if not self.is_joker else f'[{self.number if self.number else "no_value"}, {self.color if self.color else "no_value"}, joker]'
 
 class Player:
     def __init__(self, name='Player', is_bot=False) -> None:
@@ -33,6 +33,20 @@ class Player:
         self.has_placed_30 = False # the player can contribute after he placed in one turn 30+ tile points
         self.is_bot = is_bot # if the player is a bot
 
+    def __str__(self) -> str:
+        hand_str = ""
+        for tile in self.hand:
+            hand_str += str(tile) + ' '
+        
+        player_info = f"""
+        --- Player: {self.name} ---
+        hand: {hand_str}
+        has placed 30: {self.has_placed_30}
+        is bot: {self.is_bot}
+        ------
+        """
+        return player_info
+    
 class GameState:
     def __init__(self) -> None:
         '''Used to pass to the bot info about the game'''
@@ -54,7 +68,6 @@ class TileSet:
         
         for tileset in split_tile_set:
             board_instance.add_tile_set(tileset)
-
 
     def append_tile(self, position: str, tile: Tile) -> None:
         '''append to the tileset tiles at position: 
@@ -78,7 +91,7 @@ class TileSet:
         '''used to update different attributes when changes are made'''
         self.left_tile = self.tile_set[0]
         self.right_tile = self.tile_set[-1]
-        self.size = len(tiles)
+        self.size = len(self.tile_set)
     
     def get_snapshot(self):
         '''returns the snapshot of the current tileset state'''
@@ -132,7 +145,39 @@ class TileSet:
             known_colors.append(tile.color)
         # tile set has same numbers & different colors, valid
         return True
-    
+
+    def sequence_sort(self):
+        '''Sorts the tileset by sequence'''
+        sorted_set = []
+        color_set = {}
+
+        # sort by color
+        for tile in self.tile_set:
+            if tile.color not in color_set:
+                color_set[tile.color] = []
+            else:
+                color_set[tile.color].append(tile)
+        print(self)
+        for color, tiles in color_set.items():
+            removed_tile_numbers = []
+            print('color: ', color)
+            while len(removed_tile_numbers) != len(tiles):
+                num_arr = [tile.number for tile in tiles if tile.number not in removed_tile_numbers]
+                print(num_arr)
+                min_tile_num = min(num_arr)
+                for tile in tiles:
+                    if tile.number == min_tile_num:
+                        sorted_set.append(tile)
+                        removed_tile_numbers.append(tile.number)
+                        break
+            for tile in tiles:
+                    if tile.number == min_tile_num:
+                        sorted_set.append(tile)
+                        removed_tile_numbers.append(tile.number)
+                        break
+        for tile in sorted_set:
+            print(tile)
+
     def __eq__(self, other):
         return self.tile_set == other.tile_set
 
@@ -274,7 +319,7 @@ class RummikubGame:
     def deal(self) -> None:
         '''Deal 14 Tiles to each player'''
         for player in self.players:
-            player.hand = self.draw_pile(14)
+            player.hand = self.draw(14)
 
     def get_next_player_turn(self) -> Player:
         '''Returns the player who needs to play'''
@@ -287,35 +332,15 @@ class RummikubGame:
             self.player_turn = randint(0, len(self.players) - 1)
             return self.players[self.player_turn]
             
-    def player_play(self, player: Player) -> None:
-        '''Handle a player move'''
+    def player_turn(self, player: Player) -> None:
         pass
 
 
 if __name__ == '__main__':
-    player_info = [('coince', False), ('gabi', True), ('cheik', False)]
-    game = RummikubGame(player_info, 'coince')
+    player_info = [('coince', False), ('gabi', False), ('cheik', False)]
+    game = RummikubGame(player_info)
+    game.deal()
 
-    # TODO (*)idea: make a class for the temp tiles on the board (keep track of them easier)
-    # player to play init
     player_to_play = game.get_next_player_turn()
-
-
-    # interaction 1: place a valid tile set on the board OR place invalid tile(s) on the (temp) board
-    tiles = [Tile(1, 'blue'), Tile(2, 'blue'), Tile(3, 'blue'), Tile(4, 'blue')]
-    game.board.add_tile_set(tiles)
-    print(game.board)
-
-    # interaction 2: insert a tile on the right/left of a tile set
-    game.board.sequences[0].append_tile('right', Tile(5, 'blue'))
-    print(game.board)
-
-    # interaction 3: splitting a board tile set into two different tile sets (*)idea
-    game.board.sequences[0].split_set(3, game.board)
-    print(game.board)
-
-    # interaction 4: merging different groups of tiles into one valid tile set (if isn't possible loading last snapshot of the board)
-    l_part = game.board.sequences[1]
-    r_part = game.board.temp_sets[0]
-    game.board.merge_sets(l_part, r_part)
-    print(game.board)
+    tiles = TileSet([tile for tile in player_to_play.hand])
+    tiles.sequence_sort()
