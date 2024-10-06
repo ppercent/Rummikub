@@ -154,29 +154,25 @@ class TileSet:
         # sort by color
         for tile in self.tile_set:
             if tile.color not in color_set:
-                color_set[tile.color] = []
+                color_set[tile.color if tile.color else 'joker'] = [tile]
             else:
                 color_set[tile.color].append(tile)
-        print(self)
+        
+        # sort tile number
         for color, tiles in color_set.items():
-            removed_tile_numbers = []
-            print('color: ', color)
-            while len(removed_tile_numbers) != len(tiles):
-                num_arr = [tile.number for tile in tiles if tile.number not in removed_tile_numbers]
-                print(num_arr)
-                min_tile_num = min(num_arr)
-                for tile in tiles:
-                    if tile.number == min_tile_num:
-                        sorted_set.append(tile)
-                        removed_tile_numbers.append(tile.number)
-                        break
-            for tile in tiles:
-                    if tile.number == min_tile_num:
-                        sorted_set.append(tile)
-                        removed_tile_numbers.append(tile.number)
-                        break
-        for tile in sorted_set:
-            print(tile)
+            tile_numbers = [tile.number for tile in tiles if tile.number]
+            sorted_numbers = sorted(tile_numbers)
+
+            if color == 'joker':
+                sorted_set.append(joker for joker in tiles)
+            for num in sorted_numbers:
+                sorted_set.append(tiles[tile_numbers.index(num)])
+
+        self.tile_set = sorted_set
+
+    def group_sort(self):
+        '''Sorts the tileset by groups'''
+        pass
 
     def __eq__(self, other):
         return self.tile_set == other.tile_set
@@ -184,7 +180,7 @@ class TileSet:
     def __str__(self):
         tileset = ''
         for tile in self.tile_set:
-            tileset += f'[{tile.number}-{tile.color}]  '
+            tileset += f'{str(tile)}  '
         return tileset
 
 class Board:
@@ -344,3 +340,4 @@ if __name__ == '__main__':
     player_to_play = game.get_next_player_turn()
     tiles = TileSet([tile for tile in player_to_play.hand])
     tiles.sequence_sort()
+    print(tiles)
