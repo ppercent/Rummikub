@@ -172,7 +172,14 @@ class TileSet:
 
     def group_sort(self):
         '''Sorts the tileset by groups'''
-        pass
+        groups = {}
+		for tile in self.tile_set:
+			if tile.nombre not in groups:
+				groups[tile.nombre] = [tile]
+			else:
+				groups[tile.nombre].append(tile)
+				
+		
 
     def __eq__(self, other):
         return self.tile_set == other.tile_set
@@ -330,7 +337,6 @@ class RummikubGame:
             
     def player_turn(self, player: Player) -> None:
         pass
-
 
 if __name__ == '__main__':
     player_info = [('coince', False), ('gabi', False), ('cheik', False)]
