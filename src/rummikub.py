@@ -173,11 +173,11 @@ class TileSet:
     def group_sort(self):
         '''Sorts the tileset by groups'''
         groups = {}
-		for tile in self.tile_set:
-			if tile.nombre not in groups:
-				groups[tile.nombre] = [tile]
-			else:
-				groups[tile.nombre].append(tile)
+	for tile in self.tile_set:
+	    if tile.nombre not in groups:
+	        groups[tile.nombre] = [tile]
+            else:	
+	        groups[tile.nombre].append(tile)
 				
 		
 
